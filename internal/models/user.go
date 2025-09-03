@@ -11,7 +11,7 @@ type User struct {
 	Password  string    `gorm:"not null" json:"password"`
 	Email     string    `gorm:"not null;unique" json:"email"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
-	Role      string    `gorm:"size:20;not null" json:"role"`
+	Role      string    `gorm:"not null" json:"role"`
 }
 
 // TableName define explicitamente o nome da tabela no banco
