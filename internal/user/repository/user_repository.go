@@ -1,0 +1,46 @@
+package repository
+
+import (
+	"context"
+	"log"
+
+	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/models"
+	"github.com/uptrace/bun"
+)
+
+type UserRepository struct {
+	db *bun.DB
+}
+
+// função para criar um novo repositório de user, tem como parâmetro *bun.DB que é a conexão com banco
+// retorna um ponteiro para uma struct UserRepository
+// quando tivermos funções que retornam ponteiro devemos passar no return o endereço com o &
+func NewUserRepository(db *bun.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
+// r *UserRepository - diz que a função CreateUser é uma função da struct UserRepository
+// CreateUser - nome da função
+// ctx context.Context - parâmetro que a função espera receber
+// // user *models.User - parâmetro que a função espera receber no caso a struct user
+func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) error {
+	//ignoramos o primeiro retorno que é o resultado da query
+	_, err := r.db.NewInsert().Model(user).Exec(ctx)
+	if err != nil {
+		log.Fatal("Erro ao inserir usuário", err)
+	}
+	return nil
+}
+
+func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*models.User, error) {
+	//cria uma struct do tipo User
+	//preenche essa nova struct com os valores com filtro pelo ID
+	// retorna um ponteiro dessa struct
+	user := new(models.User)
+	err := r.db.NewSelect().Model(user).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		log.Fatal("Erro ao consultar usuário", err)
+	}
+	//aqui só retornamos user, sem o &, porque com o new user já é um ponteiro
+	return user, nil
+}
