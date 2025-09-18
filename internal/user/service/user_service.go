@@ -22,3 +22,11 @@ func (s *UserService) CreateUser(ctx context.Context, user *models.User) error {
 func (s *UserService) GetUserByID(ctx context.Context, id int) (*models.User, error) {
 	return s.repo.GetUserByID(ctx, id)
 }
+
+func (s *UserService) GetAllUsers(ctx context.Context) ([]*models.User, error) {
+	return s.repo.GetAllUsers(ctx)
+}
+
+func (s *UserService) DeleteUserByID(ctx context.Context, id int) error {
+	return s.repo.DeleteUserByID(ctx, id)
+}

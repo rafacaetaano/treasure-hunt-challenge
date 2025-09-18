@@ -47,23 +47,17 @@ func main() {
 		log.Fatal("Erro ao criar tabela users:", err)
 	}
 
-	// -------------------------------
 	// Repository, Service
-	// -------------------------------
 	userRepo := repository.NewUserRepository(db)
 	userSvc := service.NewUserService(userRepo)
 
-	// Handler básico (poderia estar em /api/create.go)
-
-	// -------------------------------
 	// Router
-	// -------------------------------
 	r := gin.Default()
 	r.POST("/users", api.CreateUserHandler(userSvc))
 	r.GET("users/:id", api.GetUserByIDHandler(userSvc))
+	r.GET("/users", api.GetAllUsers(userSvc))
+	r.DELETE("/users/:id", api.DeleteUserByIDHandler(userSvc))
 
-	// -------------------------------
 	// Rodar servidor
-	// -------------------------------
 	r.Run(":8080")
 }

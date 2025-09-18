@@ -28,3 +28,13 @@ func GetUserByIDHandler(svc *service.UserService) gin.HandlerFunc {
 	}
 
 }
+
+func GetAllUsers(svc *service.UserService) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		users, err := svc.GetAllUsers(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Erro ao buscar usuários"})
+		}
+		ctx.JSON(http.StatusOK, users)
+	}
+}

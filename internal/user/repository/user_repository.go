@@ -12,7 +12,7 @@ type UserRepository struct {
 	db *bun.DB
 }
 
-// função para criar um novo repositório de user, tem como parâmetro *bun.DB que é a conexão com banco
+// função  construtora para criar um novo repositório de user, tem como parâmetro *bun.DB que é a conexão com banco
 // retorna um ponteiro para uma struct UserRepository
 // quando tivermos funções que retornam ponteiro devemos passar no return o endereço com o &
 func NewUserRepository(db *bun.DB) *UserRepository {
@@ -43,4 +43,23 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*models.User,
 	}
 	//aqui só retornamos user, sem o &, porque com o new user já é um ponteiro
 	return user, nil
+}
+
+func (r *UserRepository) GetAllUsers(ctx context.Context) ([]*models.User, error) {
+	var users []*models.User
+
+	err := r.db.NewSelect().Model(&users).Scan(ctx)
+	if err != nil {
+		log.Fatal("Erro ao consultar usuários", err)
+	}
+	return users, nil
+}
+
+func (r *UserRepository) DeleteUserByID(ctx context.Context, id int) error {
+	//((*models.User)(nil)) - é para não precisar criar uma instância de User, dessa forma entende que é apenas a model User
+	_, err := r.db.NewDelete().Model((*models.User)(nil)).Where("id = ?", id).Exec(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
