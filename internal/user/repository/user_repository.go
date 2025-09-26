@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"log"
 
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/models"
@@ -27,7 +28,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) erro
 	//ignoramos o primeiro retorno que é o resultado da query
 	_, err := r.db.NewInsert().Model(user).Exec(ctx)
 	if err != nil {
-		log.Fatal("Erro ao inserir usuário", err)
+		return err
 	}
 	return nil
 }
@@ -40,6 +41,7 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*models.User,
 	err := r.db.NewSelect().Model(user).Where("id = ?", id).Scan(ctx)
 	if err != nil {
 		log.Fatal("Erro ao consultar usuário", err)
+		//TODO Remover log fatal
 	}
 	//aqui só retornamos user, sem o &, porque com o new user já é um ponteiro
 	return user, nil
@@ -55,11 +57,12 @@ func (r *UserRepository) GetAllUsers(ctx context.Context) ([]*models.User, error
 	return users, nil
 }
 
-func (r *UserRepository) DeleteUserByID(ctx context.Context, id int) error {
+func (r *UserRepository) DeleteUserByID(ctx context.Context, id int) (sql.Result, error) {
 	//((*models.User)(nil)) - é para não precisar criar uma instância de User, dessa forma entende que é apenas a model User
-	_, err := r.db.NewDelete().Model((*models.User)(nil)).Where("id = ?", id).Exec(ctx)
+	response, err := r.db.NewDelete().Model((*models.User)(nil)).Where("id = ?", id).Exec(ctx)
+	response.RowsAffected()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return response, nil
 }

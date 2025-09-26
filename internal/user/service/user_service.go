@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
+	"log"
 
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/models"
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/repository"
@@ -28,5 +30,25 @@ func (s *UserService) GetAllUsers(ctx context.Context) ([]*models.User, error) {
 }
 
 func (s *UserService) DeleteUserByID(ctx context.Context, id int) error {
-	return s.repo.DeleteUserByID(ctx, id)
+	response, err := s.repo.DeleteUserByID(ctx, id)
+	if err != nil {
+		log.Println("Error deleting user")
+		return err
+	}
+
+	result, err := response.RowsAffected()
+	if err != nil {
+		log.Println("Error get rows affected")
+		return err
+	}
+
+	if result == 0 {
+		log.Println("Nenhum usuário encontrado")
+		return errors.New("nenhum usuário encontrado")
+	}
+
+	return nil
+
 }
+
+//TODO: colocar loggers nas services

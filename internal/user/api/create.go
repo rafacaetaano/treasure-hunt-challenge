@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rafacaetaano/treasure-hunt-challenge/internal/response"
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/models"
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/service"
 )
@@ -14,16 +15,16 @@ func CreateUserHandler(svc *service.UserService) gin.HandlerFunc {
 		var user models.User
 
 		if err := json.NewDecoder(ctx.Request.Body).Decode(&user); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "JSON inválido"})
+			ctx.JSON(http.StatusBadRequest, response.NewErrorResponse("JSON inválido"))
 			return
 		}
 
 		if err := svc.CreateUser(ctx, &user); err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao criar usuário"})
+			ctx.JSON(http.StatusInternalServerError, response.NewErrorResponse("Erro ao criar usuário"))
 			return
 		}
 
-		ctx.JSON(http.StatusCreated, user)
+		ctx.JSON(http.StatusOK, response.NewSuccessResponse("Usuário criado com sucesso", gin.H{"id": user.ID}))
 	}
 }
 
