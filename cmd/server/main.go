@@ -57,6 +57,7 @@ func main() {
 	r.GET("users/:id", api.GetUserByIDHandler(userSvc))
 	r.GET("/users", api.GetAllUsers(userSvc))
 	r.DELETE("/users/:id", api.DeleteUserByIDHandler(userSvc))
+	r.PUT("/users/:id", api.UpdateUserByIDHandler(userSvc))
 
 	// Rodar servidor
 	r.Run(":8080")

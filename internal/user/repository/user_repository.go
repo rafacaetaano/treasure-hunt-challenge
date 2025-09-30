@@ -66,3 +66,11 @@ func (r *UserRepository) DeleteUserByID(ctx context.Context, id int) (sql.Result
 	}
 	return response, nil
 }
+
+func (r *UserRepository) UpdateUserByID(ctx context.Context, id int, user *models.User) error {
+	_, err := r.db.NewUpdate().Model(user).Where("id = ?", id).Exec(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -51,4 +51,8 @@ func (s *UserService) DeleteUserByID(ctx context.Context, id int) error {
 
 }
 
+func (s *UserService) UpdateUserByID(ctx context.Context, id int, user *models.User) error {
+	return s.repo.UpdateUserByID(ctx, id, user)
+}
+
 //TODO: colocar loggers nas services
