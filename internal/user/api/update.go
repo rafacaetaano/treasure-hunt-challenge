@@ -26,7 +26,7 @@ func UpdateUserByIDHandler(svc *service.UserService) gin.HandlerFunc {
 			return
 		}
 
-		err = svc.UpdateUserByID(ctx, id, &user)
+		err = svc.UpdateUserByID(ctx.Request.Context(), id, &user)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, response.NewErrorResponse("Erro ao atualizar usuário"))
 			return

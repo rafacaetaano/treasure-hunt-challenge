@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"log"
 
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/models"
 	"github.com/uptrace/bun"
@@ -40,8 +39,7 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*models.User,
 	user := new(models.User)
 	err := r.db.NewSelect().Model(user).Where("id = ?", id).Scan(ctx)
 	if err != nil {
-		log.Fatal("Erro ao consultar usuário", err)
-		//TODO Remover log fatal
+		return nil, err
 	}
 	//aqui só retornamos user, sem o &, porque com o new user já é um ponteiro
 	return user, nil
@@ -52,7 +50,7 @@ func (r *UserRepository) GetAllUsers(ctx context.Context) ([]*models.User, error
 
 	err := r.db.NewSelect().Model(&users).Scan(ctx)
 	if err != nil {
-		log.Fatal("Erro ao consultar usuários", err)
+		return nil, err
 	}
 	return users, nil
 }
@@ -73,4 +71,13 @@ func (r *UserRepository) UpdateUserByID(ctx context.Context, id int, user *model
 		return err
 	}
 	return nil
+}
+
+func (r *UserRepository) Login(ctx context.Context, username string, password string) (*models.User, error) {
+	user := new(models.User)
+	err := r.db.NewSelect().Model(user).Where("username = ?", username).Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

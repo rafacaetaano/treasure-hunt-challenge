@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
 	"database/sql"
-	"fmt"
 	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/api"
@@ -13,52 +14,53 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
-	"golang.org/x/net/context"
 )
 
-func main() {
-	// -------------------------------
-	// Conexão com banco de dados
-	// -------------------------------
+func run() error {
+	// 1) Conexão com o banco (pool do database/sql + Bun)
 	dsn := "postgres://postgres:admin@localhost:5432/treasuredb?sslmode=disable"
 	connector := pgdriver.NewConnector(pgdriver.WithDSN(dsn))
 	sqldb := sql.OpenDB(connector)
+
 	db := bun.NewDB(sqldb, pgdialect.New())
+	defer db.Close() // será executado quando run() retornar
 
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Println("Erro ao fechar a conexão:", err)
-		}
-	}()
+	// 2) Boot com timeout (não travar infinito no ping/migração)
+	bootCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	if err := db.Ping(); err != nil {
-		log.Fatal("Erro ao conectar no banco", err)
+	if err := db.PingContext(bootCtx); err != nil {
+		return err
 	}
-	fmt.Println("Conexão com banco realizada com sucesso")
 
-	//Cria tabela
-
-	ctx := context.Background()
-
+	// 3) Criar tabela se não existir
 	if _, err := db.NewCreateTable().
 		Model((*models.User)(nil)).
 		IfNotExists().
-		Exec(ctx); err != nil {
-		log.Fatal("Erro ao criar tabela users:", err)
+		Exec(bootCtx); err != nil {
+		return err
 	}
+	log.Println("Conexão realizada e tabela ok")
 
-	// Repository, Service
+	// 4) Wiring de dependências
 	userRepo := repository.NewUserRepository(db)
 	userSvc := service.NewUserService(userRepo)
 
-	// Router
+	// 5) Router
 	r := gin.Default()
 	r.POST("/users", api.CreateUserHandler(userSvc))
-	r.GET("users/:id", api.GetUserByIDHandler(userSvc))
-	r.GET("/users", api.GetAllUsers(userSvc))
+	r.GET("/users/:id", api.GetUserByIDHandler(userSvc))
+	r.GET("/users", api.GetAllUsersHandler(userSvc))
 	r.DELETE("/users/:id", api.DeleteUserByIDHandler(userSvc))
 	r.PUT("/users/:id", api.UpdateUserByIDHandler(userSvc))
+	r.POST("/userLogin", api.Login(userSvc))
 
-	// Rodar servidor
-	r.Run(":8080")
+	// 6) Rodar servidor (bloqueia até parar; quando sair, defer db.Close() roda)
+	return r.Run(":8080")
+}
+
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err) // decide encerrar aqui; defers de run() já rodaram
+	}
 }

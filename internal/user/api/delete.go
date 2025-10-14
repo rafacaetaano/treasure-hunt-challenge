@@ -20,9 +20,9 @@ func DeleteUserByIDHandler(svc *service.UserService) gin.HandlerFunc {
 			return
 		}
 
-		err = svc.DeleteUserByID(ctx, id)
+		err = svc.DeleteUserByID(ctx.Request.Context(), id)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, response.NewErrorResponse("Erro ao remover usuário"))
+			ctx.JSON(http.StatusInternalServerError, response.NewErrorResponse(err.Error()))
 			return
 		}
 		ctx.JSON(http.StatusOK, response.NewSuccessResponse("Usuário removido com sucesso", nil))

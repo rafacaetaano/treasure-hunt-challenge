@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/response"
+	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/api/dto"
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/models"
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/service"
 )
@@ -14,17 +15,39 @@ func CreateUserHandler(svc *service.UserService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var user models.User
 
-		if err := json.NewDecoder(ctx.Request.Body).Decode(&user); err != nil {
+		err := json.NewDecoder(ctx.Request.Body).Decode(&user)
+		if err != nil {
 			ctx.JSON(http.StatusBadRequest, response.NewErrorResponse("JSON inválido"))
 			return
 		}
 
-		if err := svc.CreateUser(ctx, &user); err != nil {
-			ctx.JSON(http.StatusInternalServerError, response.NewErrorResponse("Erro ao criar usuário"))
+		err = svc.CreateUser(ctx.Request.Context(), &user)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, response.NewErrorResponse(err.Error()))
 			return
 		}
 
 		ctx.JSON(http.StatusOK, response.NewSuccessResponse("Usuário criado com sucesso", gin.H{"id": user.ID}))
+	}
+}
+
+func Login(svc *service.UserService) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		var in dto.LoginRequest
+
+		// 1) Ler o JSON do corpo
+		if err := ctx.ShouldBindJSON(&in); err != nil {
+			ctx.JSON(http.StatusBadRequest, response.NewErrorResponse("JSON inválido"))
+			return
+		}
+
+		_, err := svc.Login(ctx, in.Username, in.Password)
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, response.NewErrorResponse("Credenciais inválidas"))
+			return
+		}
+		ctx.JSON(http.StatusOK, response.NewSuccessResponse("Login realizado com sucesso", nil))
 	}
 }
 

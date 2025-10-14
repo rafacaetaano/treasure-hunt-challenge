@@ -2,8 +2,9 @@ package response
 
 type Response struct {
 	Success bool        `json:"success"`
-	Message string      `json:"message"`
+	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
+	Error   string      `json:"error,omitempty"`
 }
 
 func NewSuccessResponse(message string, data interface{}) Response {
@@ -17,6 +18,6 @@ func NewSuccessResponse(message string, data interface{}) Response {
 func NewErrorResponse(message string) Response {
 	return Response{
 		Success: false,
-		Message: message,
+		Error:   message,
 	}
 }
