@@ -42,6 +42,8 @@ func run() error {
 	}
 	log.Println("Conexão realizada e tabela ok")
 
+	//TODO adicionar middleware de authentication
+
 	// 4) Wiring de dependências
 	userRepo := repository.NewUserRepository(db)
 	userSvc := service.NewUserService(userRepo)

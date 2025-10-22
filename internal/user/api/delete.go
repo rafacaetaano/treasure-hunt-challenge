@@ -9,7 +9,6 @@ import (
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/service"
 )
 
-// TODO: ver como passar o erro que estamos usando na service na requisição para retornar quando bater no postman
 func DeleteUserByIDHandler(svc *service.UserService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 

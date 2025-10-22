@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/models"
 	"github.com/rafacaetaano/treasure-hunt-challenge/internal/user/repository"
@@ -28,12 +29,35 @@ func HashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
+func ValidatePassword(password string) error {
+	//Regex para validar a senha (mínimo de 8 caracteres, 1 maiúscula, 1 número)
+	re := regexp.MustCompile(`^[A-Za-z0-9]*[A-Z]+[A-Za-z0-9]*\d+[A-Za-z0-9]*$`)
+
+	match := re.MatchString(password)
+	if !match {
+		return errors.New("a senha não atende as regras solicitadas")
+	}
+	return nil
+}
+
 func (s *UserService) CreateUser(ctx context.Context, user *models.User) error {
+
+	err := user.NewValidate()
+	if err != nil {
+		return err
+	}
+
+	err = ValidatePassword(user.Password)
+	if err != nil {
+		return err
+	}
+
 	hashedPassword, err := HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
 	user.Password = hashedPassword
+
 	err = s.repo.CreateUser(ctx, user)
 	if err != nil {
 		return fmt.Errorf("fail to create user on database")

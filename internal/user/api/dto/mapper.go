@@ -22,3 +22,5 @@ func ToUserResponseList(users []*models.User) []UserResponse {
 	}
 	return out
 }
+
+//TODO colocar como ParseResponse
